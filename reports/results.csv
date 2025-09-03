@@ -1,0 +1,2 @@
+data,val_pr_auc,val_roc_auc,test_pr_auc,test_roc_auc,val_pr_auc_deas,test_pr_auc_deas
+toy.csv,1.0,1.0,1.0,1.0,,
