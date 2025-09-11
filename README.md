@@ -4,7 +4,7 @@
 
 1. Clone repo:
    ```bash
-   git clone https://github.com/<your-username>/GO-ODIF.git
+   git clone https://github.com/sj302003/AnomalyDetection.git
    cd GO-ODIF
 
 2. Create and activate virtual environment:
