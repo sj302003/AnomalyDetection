@@ -7,7 +7,7 @@
    git clone https://github.com/sj302003/AnomalyDetection.git
    cd AnomalyDetection
 
-2. Create and activate virtual environment:
+2. Create and activate a virtual environment:
    ```bash
    python -m venv venv
    venv\Scripts\activate -- windows
@@ -20,11 +20,12 @@
 
 4. Running the Baseline:
    ```bash
-   python -m experiments.run_experiment --data data/toy.csv --label label --trees 100 --psi 128 --d_out 64 --depth 1
+   python -m experiments.run_experiment --data "data/2025-04-01.csv" --label failure
 
 5. Run with DEAS scoring:
    ```bash
-   python -m experiments.run_experiment --data data/toy.csv --label label --scoring deas
+   python -m experiments.run_experiment --data data/2025-04-01.csv --label failure --scoring deas
+
 
 
 
