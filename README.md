@@ -10,8 +10,8 @@
 2. Create and activate a virtual environment:
    ```bash
    python -m venv venv
-   venv\Scripts\activate -- windows
-   source venv/bin/activate --macOS/Linux
+   venv\Scripts\activate #windows
+   source venv/bin/activate #macOS/Linux
 
 3. Install dependencies:
    ```bash
