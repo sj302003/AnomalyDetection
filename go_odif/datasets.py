@@ -1,55 +1,80 @@
-from typing import Tuple, Optional
+from typing import Tuple
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
+
+# Important SMART attributes for failure prediction
+SMART_ATTRIBUTES = {
+    1: "Read Error Rate",              # Frequency of read errors during normal operation
+    5: "Reallocated Sectors Count",    # Bad sectors that were remapped - direct indicator of disk problems
+    10: "Spin Retry Count",            # Number of retry attempts to spin up the drive
+    184: "End-to-End Error",           # Hardware ECC recovered error count
+    187: "Reported Uncorrectable",     # Number of uncorrectable errors - indicates severe read/write issues
+    188: "Command Timeout",            # Number of aborted operations due to HDD timeout
+    193: "Load/Unload Cycle Count",    # Count of load/unload cycles into head landing zone
+    194: "Temperature",                # Current temperature of the drive
+    197: "Current Pending Sectors",    # Sectors waiting to be remapped - potential future failures
+    198: "Offline Uncorrectable",      # Sectors that couldn't be remapped - severe disk damage
+    199: "UDMA CRC Error Count"        # Cyclic Redundancy Check error rate during UDMA operations
+}
 
 def load_csv(
-    path: str,
+    path: str = "data/2025-04-02.csv",
     label_col: str = "failure",
     test_size: float = 0.2,
     val_size: float = 0.2,
     random_state: int = 42,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Load hard drive failure prediction dataset with proper scaling.
+    Load hard drive failure prediction dataset focusing on critical SMART attributes.
     
-    Args:
-        path: Path to the CSV file
-        label_col: Name of the label column (default: 'failure')
-        test_size: Proportion of dataset to include in test split
-        val_size: Proportion of dataset to include in validation split
-        random_state: Random state for reproducibility
+    The selected SMART attributes are:
+    - SMART 5: Shows reallocated bad sectors
+    - SMART 187: Shows uncorrectable errors
+    - SMART 197: Shows pending bad sectors
+    - SMART 198: Shows offline uncorrectable sectors
+    
+    These attributes are chosen because they directly indicate physical disk problems.
     """
     # Load the dataset
     df = pd.read_csv(path)
+    print("Loading dataset:", path)
     
-    # Print column info for debugging
-    print("Dataset columns:", df.columns.tolist())
+    # Select only relevant SMART attributes (raw values)
+    selected_columns = [f"smart_{id}_raw" for id in SMART_ATTRIBUTES.keys()]
+    selected_columns.append(label_col)
     
-    # Drop non-feature columns we don't need
-    drop_cols = ['date', 'serial_number', 'model', 'datacenter', 
-                 'cluster_id', 'vault_id', 'pod_id']
+    # Keep only relevant columns
+    df = df[selected_columns]
+    
+    # Print feature information
+    print("\nSelected SMART attributes:")
+    for smart_id, description in SMART_ATTRIBUTES.items():
+        print(f"SMART {smart_id}: {description}")
     
     # Handle label column
     if label_col not in df.columns:
         raise ValueError(f"Label column '{label_col}' not found in dataset")
     
+    # Split features and target
     y = df[label_col].values.astype(int)
-    df = df.drop(columns=[label_col] + drop_cols)
+    X = df.drop(columns=[label_col])
     
-    # Convert categorical columns to numeric
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            le = LabelEncoder()
-            df[col] = le.fit_transform(df[col].astype(str))
+    # Print class distribution
+    n_failures = y.sum()
+    print(f"\nClass distribution:")
+    print(f"Total samples: {len(y)}")
+    print(f"Normal drives: {len(y) - n_failures}")
+    print(f"Failed drives: {n_failures}")
+    print(f"Failure rate: {n_failures/len(y)*100:.2f}%")
     
     # Handle missing values
-    df = df.fillna(0)
+    X = X.fillna(0)
     
-    # Scale features to prevent overflow
+    # Scale features
     scaler = StandardScaler()
-    X = scaler.fit_transform(df.values.astype(float))
+    X = scaler.fit_transform(X.values.astype(float))
     
     # Split data with stratification
     X_tmp, X_test, y_tmp, y_test = train_test_split(
