@@ -8,6 +8,7 @@ from go_odif.iforest import ODIForest
 from go_odif.deas import deas_scores
 from go_odif.metrics import pr_auc, roc_auc
 from go_odif.utils import timer
+from go_odif.ga import GAOptimizer
 import numpy as np
 import csv
 
