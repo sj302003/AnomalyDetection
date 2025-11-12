@@ -87,3 +87,26 @@ class ODIForest:
             s = 2 ** (-E_h / self._c_psi) if self._c_psi > 0 else 0.0
             scores[i] = s
         return scores
+    
+    # === Helper functions for GA integration ===
+
+def fit_iforest(X, t=100, psi=256, seed=42):
+    """Train an ODIForest and return the fitted model."""
+    from .cere import CERE  # lazy import to avoid circular dependency
+    cere = CERE(input_dim=X.shape[1], d_out=128, depth=1, seed=seed)
+    model = ODIForest(t=t, psi=psi, seed=seed).fit(X, cere=cere)
+    return model
+
+
+def evaluate_iforest(model, X, y=None):
+    """Evaluate the trained ODIForest on given data.
+       Uses PR-AUC if labels exist, else mean anomaly score.
+    """
+    from .metrics import pr_auc
+    scores = model.score_samples(X, cere=model.cere if hasattr(model, 'cere') else None)
+    if y is not None:
+        return pr_auc(y, scores)
+    else:
+        # If no labels, higher average score = more separation (proxy)
+        return float(np.mean(scores))
+
