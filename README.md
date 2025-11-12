@@ -20,7 +20,7 @@
 
 4. Running the Baseline:
    ```bash
-   python -m experiments.run_experiment --data "data/2025-04-01.csv" --label failure
+   python -m experiments.run_experiment --data "data/2025-04-02.csv" --label "failure"
 
 5. Run with DEAS scoring:
    ```bash
